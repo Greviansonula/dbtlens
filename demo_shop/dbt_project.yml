@@ -9,5 +9,8 @@ model-paths: ["models"]
 models:
   demo_shop:          
     staging:          
-      +materialized: table # `table` stores the results, makes reads faster but means the data is only as new as the last run
+      +materialized: view # `table` stores the results, makes reads faster but means the data is only as new as the last run
       +schema: staging
+    marts:
+      +materialized: table
+      +schema: marts
