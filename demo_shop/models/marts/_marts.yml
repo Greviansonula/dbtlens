@@ -1,0 +1,24 @@
+version: 2
+
+models:
+  - name: fct_payments
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: amount_paid
+        data_tests: [not_null]
+
+  - name: fct_orders
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+
+  - name: dim_customers
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+
+  - name: fct_daily_revenue
+    columns:
+      - name: revenue_date
+        data_tests: [unique, not_null]

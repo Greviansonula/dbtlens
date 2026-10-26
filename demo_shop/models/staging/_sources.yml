@@ -5,5 +5,14 @@ sources:
     schema: raw
     tables:
       - name: customers
+        columns:
+          - name: id
+            data_tests: [not_null]
       - name: orders
+        columns:
+          - name: id
+            data_tests: [not_null]
       - name: payments
+        columns:
+          - name: id
+            data_tests: [not_null]
