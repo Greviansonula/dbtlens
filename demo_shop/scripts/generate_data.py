@@ -4,6 +4,11 @@ from datetime import datetime, timedelta, timezone
 
 import duckdb
 
+import argparse
+ap = argparse.ArgumentParser()
+ap.add_argument("--scenario", choices=["healthy", "incident"], default="healthy")
+incident = ap.parse_args().scenario == "incident"
+
 rng = random.Random(42) 
 start = datetime(2026, 1, 1)
 now = datetime.now(timezone.utc).replace(tzinfo=None)
@@ -28,14 +33,21 @@ for oid in range(1, 1001):
                          amount, pstatus, ts + timedelta(minutes=rng.randint(1, 30)), loaded_at))
         pid += 1
 
+# Inject some data quality issues for testing purposes
+if incident:
+    orders += [orders[10], orders[250], orders[777]]              # 1. duplicate key
+    stale = now - timedelta(days=3)
+    customers = [c[:-1] + (stale,) for c in customers]            # 2. stale source
+amount_col = "amount_usd" if incident else "amount"               # 3. renamed column
+
 con = duckdb.connect("demo_shop.duckdb")
 con.execute("create schema if not exists raw")
 con.execute("""create or replace table raw.customers (id integer, name varchar, email varchar,
                country varchar, signup_date date, _loaded_at timestamp)""")
 con.execute("""create or replace table raw.orders (id integer, customer_id integer,
                order_ts timestamp, status varchar, _loaded_at timestamp)""")
-con.execute("""create or replace table raw.payments (id integer, order_id integer, method varchar,
-               amount decimal(10,2), status varchar, paid_at timestamp, _loaded_at timestamp)""")
+con.execute(f"""create or replace table raw.payments (id integer, order_id integer, method varchar,
+               {amount_col} decimal(10,2), status varchar, paid_at timestamp, _loaded_at timestamp)""")
 con.executemany("insert into raw.customers values (?,?,?,?,?,?)", customers)
 con.executemany("insert into raw.orders values (?,?,?,?,?)", orders)
 con.executemany("insert into raw.payments values (?,?,?,?,?,?,?)", payments)
