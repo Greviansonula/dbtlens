@@ -22,3 +22,16 @@ models:
     columns:
       - name: revenue_date
         data_tests: [unique, not_null]
+
+exposures:
+  - name: revenue_dashboard
+    type: dashboard
+    maturity: high
+    owner: {name: Finance Analytics, email: finance@example.com}
+    depends_on:
+      - ref('fct_daily_revenue')
+  - name: customer_ltv_report
+    type: analysis
+    owner: {name: Growth Team, email: growth@example.com}
+    depends_on:
+      - ref('dim_customers')
